@@ -1,0 +1,8 @@
+[24/Feb/2026 07:00:58] "POST /api/add-expense/ HTTP/1.1" 200 28
+[24/Feb/2026 07:00:58] "POST /api/get-expenses/ HTTP/1.1" 200 1902
+[24/Feb/2026 07:06:25] "OPTIONS /api/get-expenses/ HTTP/1.1" 200 0
+[24/Feb/2026 07:06:25] "POST /api/get-expenses/ HTTP/1.1" 200 1902
+[24/Feb/2026 07:06:46] "POST /api/add-expense/ HTTP/1.1" 200 28
+[24/Feb/2026 07:06:46] "POST /api/get-expenses/ HTTP/1.1" 200 2200
+[24/Feb/2026 07:07:16] "OPTIONS /api/request-statement/ HTTP/1.1" 200 0
+[24/Feb/2026 07:07:20] "POST /api/request-statement/ HTTP/1.1" 200 43

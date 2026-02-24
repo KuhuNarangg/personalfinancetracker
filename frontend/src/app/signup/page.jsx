@@ -4,36 +4,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Signup() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-    const handleSignup = async () => {
-        setIsLoading(true);
-        try {
-            const res = await fetch("http://127.0.0.1:8001/api/signup/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem("username", username);
-                router.push("/dashboard");
-            } else {
-                alert(data.message || data.error);
-            }
-        } catch (err) {
-            alert("Something went wrong. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const handleSignup = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("username", username);
+        router.push("/dashboard");
+      } else {
+        alert(data.message || data.error);
+      }
+    } catch (err) {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <>
-            <style>{`
+  return (
+    <>
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,10 +56,18 @@ export default function Signup() {
         .page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
 
         .form-panel {
+          position: relative;
           display: flex; flex-direction: column; justify-content: center; align-items: center;
           padding: 3rem;
           animation: fromLeft 0.9s cubic-bezier(.16,1,.3,1) both;
         }
+        .btn-back {
+          position: absolute; top: 2rem; left: 2.5rem;
+          font-family: var(--fb); font-size: 0.8rem; font-weight: 500;
+          color: var(--muted); text-decoration: none;
+          transition: color 0.2s; z-index: 10;
+        }
+        .btn-back:hover { color: var(--ink); }
         .form-wrap { width: 100%; max-width: 400px; }
 
         .form-eyebrow {
@@ -170,58 +179,64 @@ export default function Signup() {
         }
       `}</style>
 
-            <div className="page">
-                <div className="form-panel">
-                    <div className="form-wrap">
-                        <div className="form-eyebrow"><span className="form-eyebrow-line" />Get started</div>
-                        <h1 className="form-title">Create account</h1>
-                        <p className="form-sub">Free forever. No credit card. Set up in 2 minutes.</p>
+      <div className="page">
+        <div className="form-panel">
+          <Link href="/" className="btn-back">← Home</Link>
+          <div className="form-wrap">
+            <div className="form-eyebrow"><span className="form-eyebrow-line" />Get started</div>
+            <h1 className="form-title">Create account</h1>
+            <p className="form-sub">Free forever. No credit card. Set up in 2 minutes.</p>
 
-                        <div className="field">
-                            <label className="field-label">Username</label>
-                            <input className="field-input" placeholder="e.g. rahul_dev"
-                                value={username} onChange={(e) => setUsername(e.target.value)} />
-                        </div>
-                        <div className="field">
-                            <label className="field-label">Password</label>
-                            <input type="password" className="field-input" placeholder="••••••••"
-                                value={password} onChange={(e) => setPassword(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleSignup()} />
-                        </div>
-
-                        <button className="btn-submit" onClick={handleSignup} disabled={isLoading}>
-                            {isLoading ? "Creating account..." : "Create Account →"}
-                        </button>
-
-                        <p className="form-footer">
-                            Already have an account? <Link href="/login">Sign in</Link>
-                        </p>
-                    </div>
-                </div>
-
-                <div className="brand-panel">
-                    <div className="brand-glow" />
-                    <Link href="/" className="brand-logo">
-                        <div className="brand-logo-sq">F</div>
-                        Fintrack
-                    </Link>
-                    <div className="brand-mid">
-                        <div className="brand-big">
-                            <span>KNOW</span><br />
-                            <span className="out">YOUR</span><br />
-                            <span className="r">MONEY.</span>
-                        </div>
-                        <p className="brand-sub">Join thousands of Indians who stopped losing money to forgotten subscriptions.</p>
-                        <div className="perks">
-                            <div className="perk"><span className="perk-dot" />Track all subscriptions in one place</div>
-                            <div className="perk"><span className="perk-dot" />Get renewal reminders before you're charged</div>
-                            <div className="perk"><span className="perk-dot" />See your monthly burn rate instantly</div>
-                            <div className="perk"><span className="perk-dot" />Visualize spending with charts</div>
-                        </div>
-                    </div>
-                    <span className="brand-footer">© 2025 Fintrack</span>
-                </div>
+            <div className="field">
+              <label className="field-label">Username</label>
+              <input className="field-input" placeholder="e.g. rahul_dev"
+                value={username} onChange={(e) => setUsername(e.target.value)} />
             </div>
-        </>
-    );
+            <div className="field">
+              <label className="field-label">Email</label>
+              <input type="email" className="field-input" placeholder="you@domain.com"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="field-label">Password</label>
+              <input type="password" className="field-input" placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSignup()} />
+            </div>
+
+            <button className="btn-submit" onClick={handleSignup} disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Create Account →"}
+            </button>
+
+            <p className="form-footer">
+              Already have an account? <Link href="/login">Sign in</Link>
+            </p>
+          </div>
+        </div>
+
+        <div className="brand-panel">
+          <div className="brand-glow" />
+          <Link href="/" className="brand-logo">
+            <div className="brand-logo-sq">F</div>
+            Fintrack
+          </Link>
+          <div className="brand-mid">
+            <div className="brand-big">
+              <span>KNOW</span><br />
+              <span className="out">YOUR</span><br />
+              <span className="r">MONEY.</span>
+            </div>
+            <p className="brand-sub">Join thousands of Indians who stopped losing money to forgotten subscriptions.</p>
+            <div className="perks">
+              <div className="perk"><span className="perk-dot" />Track all subscriptions in one place</div>
+              <div className="perk"><span className="perk-dot" />Get renewal reminders before you're charged</div>
+              <div className="perk"><span className="perk-dot" />See your monthly burn rate instantly</div>
+              <div className="perk"><span className="perk-dot" />Visualize spending with charts</div>
+            </div>
+          </div>
+          <span className="brand-footer">© 2025 Fintrack</span>
+        </div>
+      </div>
+    </>
+  );
 }

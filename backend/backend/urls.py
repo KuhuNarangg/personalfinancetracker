@@ -24,4 +24,8 @@ urlpatterns = [
     path('api/login/', views.login_api),
     path('api/add-expense/', views.add_expense),
     path('api/get-expenses/', views.get_expenses),
+    path('api/edit-expense/', views.edit_expense),
+    path('api/delete-expense/', views.delete_expense),
+    path('api/stop-subscription/', views.stop_subscription),
+    path('api/request-statement/', views.request_statement),
 ]

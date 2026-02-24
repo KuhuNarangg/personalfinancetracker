@@ -12,7 +12,7 @@ export default function Login() {
     const handleLogin = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch("http://127.0.0.1:8001/api/login/", {
+            const res = await fetch("http://127.0.0.1:8000/api/login/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
@@ -113,10 +113,18 @@ export default function Login() {
         }
 
         .right-panel {
+          position: relative;
           display: flex; flex-direction: column; justify-content: center; align-items: center;
           padding: 3rem;
           animation: fromRight 0.9s cubic-bezier(.16,1,.3,1) both;
         }
+        .btn-back {
+          position: absolute; top: 2rem; right: 2.5rem;
+          font-family: var(--fb); font-size: 0.8rem; font-weight: 500;
+          color: var(--muted); text-decoration: none;
+          transition: color 0.2s; z-index: 10;
+        }
+        .btn-back:hover { color: var(--ink); }
 
         .form-wrap { width: 100%; max-width: 400px; }
 
@@ -237,6 +245,7 @@ export default function Login() {
                 </div>
 
                 <div className="right-panel">
+                    <Link href="/" className="btn-back">← Home</Link>
                     <div className="form-wrap">
                         <div className="form-eyebrow">
                             <span className="form-eyebrow-line" />
