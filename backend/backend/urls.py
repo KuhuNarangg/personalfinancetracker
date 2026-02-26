@@ -28,4 +28,8 @@ urlpatterns = [
     path('api/delete-expense/', views.delete_expense),
     path('api/stop-subscription/', views.stop_subscription),
     path('api/request-statement/', views.request_statement),
+    path('api/goals/',              views.list_goals),
+    path('api/goals/add/',          views.add_goal),
+    path('api/goals/delete/',       views.delete_goal),
+    path('api/goals/update-month/', views.update_goal_month),
 ]

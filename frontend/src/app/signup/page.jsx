@@ -218,7 +218,7 @@ export default function Signup() {
           <div className="brand-glow" />
           <Link href="/" className="brand-logo">
             <div className="brand-logo-sq">F</div>
-            Fintrack
+            PocketPilot
           </Link>
           <div className="brand-mid">
             <div className="brand-big">
@@ -234,7 +234,7 @@ export default function Signup() {
               <div className="perk"><span className="perk-dot" />Visualize spending with charts</div>
             </div>
           </div>
-          <span className="brand-footer">© 2025 Fintrack</span>
+          <span className="brand-footer">© 2025 PocketPilot</span>
         </div>
       </div>
     </>

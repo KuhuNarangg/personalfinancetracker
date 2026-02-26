@@ -25,7 +25,24 @@ export default function LogsPage() {
     const [editingId, setEditingId] = useState(null);
     const [toast, setToast] = useState(null);
     const [search, setSearch] = useState("");
+    const [filterType, setFilterType] = useState("all");
+    const [amountFilter, setAmountFilter] = useState("all");
+    const [dateFilter, setDateFilter] = useState("all");
+    const [theme, setTheme] = useState("light");
     const router = useRouter();
+
+    useEffect(() => {
+        const t = localStorage.getItem("theme") || "light";
+        setTheme(t);
+        document.documentElement.classList.toggle("dark", t === "dark");
+    }, []);
+
+    const toggleTheme = () => {
+        const n = theme === "light" ? "dark" : "light";
+        setTheme(n);
+        localStorage.setItem("theme", n);
+        document.documentElement.classList.toggle("dark", n === "dark");
+    };
 
     useEffect(() => {
         const u = localStorage.getItem("username");
@@ -122,10 +139,41 @@ export default function LogsPage() {
         setForm({ title: "", amount: "", category: "", type: "expense", billing_day: "", billing_period: "monthly", custom_months: "", entry_date: "" });
     };
 
-    const filtered = expenses.filter(e =>
-        e.title.toLowerCase().includes(search.toLowerCase()) ||
-        (e.category || "").toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = expenses.filter(e => {
+        const matchSearch = e.title.toLowerCase().includes(search.toLowerCase()) || (e.category || "").toLowerCase().includes(search.toLowerCase());
+        const matchType = filterType === "all" || e.expense_type === filterType || (!e.expense_type && filterType === "expense");
+
+        let matchAmount = true;
+        const amt = Number(e.amount);
+        if (amountFilter === "under500") matchAmount = amt < 500;
+        if (amountFilter === "above500") matchAmount = amt >= 500;
+        if (amountFilter === "above1000") matchAmount = amt >= 1000;
+        if (amountFilter === "above5000") matchAmount = amt >= 5000;
+
+        let matchDate = true;
+        if (dateFilter !== "all" && e.date) {
+            const expDate = new Date(e.date);
+            const now = new Date();
+            if (dateFilter === "7days") {
+                const diffTime = Math.abs(now - expDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                matchDate = diffDays <= 7;
+            }
+            if (dateFilter === "30days") {
+                const diffTime = Math.abs(now - expDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                matchDate = diffDays <= 30;
+            }
+            if (dateFilter === "month") {
+                matchDate = expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+            }
+            if (dateFilter === "year") {
+                matchDate = expDate.getFullYear() === now.getFullYear();
+            }
+        }
+
+        return matchSearch && matchType && matchAmount && matchDate;
+    });
 
     const totalSpend = expenses.reduce((a, b) => {
         const isRecurring = b.is_subscription || ["subscription", "sip", "emi"].includes(b.expense_type);
@@ -134,10 +182,11 @@ export default function LogsPage() {
         const paid = isRecurring ? (b.months_paid || 0) : 1;
         return a + (Number(b.amount) * paid);
     }, 0);
+
     return (
-        <>
+        <div className={theme}>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -145,6 +194,7 @@ export default function LogsPage() {
           --bg:       #f5f2ed;
           --bg2:      #edeae3;
           --bg3:      #e6e1d8;
+          --card-bg:  #fff;
           --ink:      #1a1714;
           --red:      #d94f3d;
           --red2:     #e8604e;
@@ -152,17 +202,30 @@ export default function LogsPage() {
           --red-soft: rgba(217,79,61,0.08);
           --muted:    #7a7368;
           --border:   rgba(26,23,20,0.09);
-          --fh: 'Unbounded', sans-serif;
+          --fh: 'Plus Jakarta Sans', sans-serif;
           --fb: 'Outfit', sans-serif;
+        }
+        .dark {
+          --bg: #0d0d0d; --bg2: #1a1a1a; --bg3: #242424;
+          --card-bg: #181818;
+          --ink: #f0ede8; --muted: #9e9690;
+          --red: #e05a48; --red2: #f07060;
+          --red-glow: rgba(224,90,72,.25); --red-soft: rgba(224,90,72,.1);
+          --border: rgba(255,255,255,0.07);
+          --nav-bg: rgba(13,13,13,0.96);
         }
 
         html { scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--ink); font-family: var(--fb); -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--ink); font-family: var(--fb); -webkit-font-smoothing: antialiased; transition: background .3s, color .3s; }
+
+        /* THEME BTN */
+        .btn-theme{background:none;border:1px solid var(--border);color:var(--ink);font-size:1rem;cursor:pointer;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+        .btn-theme:hover{background:var(--bg2);}
 
         /* ── NAV ── */
         .nav {
           position: sticky; top: 0; z-index: 100;
-          background: rgba(245,242,237,0.93); backdrop-filter: blur(18px);
+          background: var(--nav-bg, rgba(245,242,237,0.93)); backdrop-filter: blur(18px);
           border-bottom: 1px solid var(--border);
           height: 60px; display: flex; align-items: center; justify-content: space-between;
           padding: 0 2.5rem;
@@ -220,21 +283,21 @@ export default function LogsPage() {
         /* ── STAT CHIPS ── */
         .stat-chips { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
         .chip {
-          background: #fff; border: 1px solid var(--border); border-radius: 12px;
+          background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
           padding: 0.9rem 1.25rem; min-width: 140px;
           animation: riseCard 0.5s ease both;
         }
         .chip-lbl { font-family: var(--fb); font-size: 0.6rem; font-weight: 500; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 0.3rem; }
         .chip-val { font-family: var(--fh); font-size: 1.3rem; font-weight: 900; color: var(--red); letter-spacing: -1px; line-height: 1; }
-        .chip.dark { background: #111108; border-color: transparent; }
-        .chip.dark .chip-lbl { color: rgba(255,255,255,0.25); }
-        .chip.dark .chip-val { color: #f0eee9; }
+        .chip.dark { background: var(--bg2); border-color: transparent; }
+        .chip.dark .chip-lbl { color: var(--muted); }
+        .chip.dark .chip-val { color: var(--ink); }
 
         /* ── FORM CARD ── */
         .form-card {
-          background: #fff; border: 1px solid var(--border); border-radius: 16px;
+          background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
           padding: 1.75rem; margin-bottom: 2rem;
-          box-shadow: 0 4px 24px rgba(26,23,20,0.04);
+          box-shadow: 0 4px 24px rgba(0,0,0,0.06);
           animation: riseCard 0.5s 0.1s ease both;
         }
         .form-card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
@@ -252,13 +315,13 @@ export default function LogsPage() {
         .f-lbl { font-family: var(--fb); font-size: 0.62rem; font-weight: 500; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 0.4rem; }
         .f-inp {
           width: 100%; font-family: var(--fb); font-size: 0.88rem; font-weight: 400;
-          color: var(--ink); background: var(--bg); border: 1px solid var(--border);
+          color: var(--ink); background: var(--bg2); border: 1px solid var(--border);
           border-radius: 9px; padding: 0.72rem 0.9rem; outline: none;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .f-inp::placeholder { color: rgba(26,23,20,0.22); }
-        .f-inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); background: #fff; }
-        .f-inp option { background: #fff; }
+        .f-inp::placeholder { color: var(--muted); opacity: 0.6; }
+        .f-inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+        .f-inp option { background: var(--bg); color: var(--ink); }
 
         .save-btn {
           font-family: var(--fh); font-size: 0.58rem; font-weight: 700;
@@ -271,20 +334,28 @@ export default function LogsPage() {
         .save-btn:hover { background: var(--red2); transform: translateY(-1px); box-shadow: 0 6px 20px var(--red-glow); }
 
         /* ── SEARCH ── */
-        .search-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .search-wrap { position: relative; flex: 1; max-width: 320px; }
+        .search-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 250px; max-width: 380px; }
         .search-ico { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: var(--muted); pointer-events: none; }
         .search-inp {
           width: 100%; font-family: var(--fb); font-size: 0.88rem; color: var(--ink);
-          background: #fff; border: 1px solid var(--border);
+          background: var(--card-bg); border: 1px solid var(--border);
           border-radius: 9px; padding: 0.65rem 0.9rem 0.65rem 2.4rem; outline: none;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
         .search-inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+        .filter-select {
+          font-family: var(--fb); font-size: 0.82rem; color: var(--ink);
+          background: var(--card-bg); border: 1px solid var(--border);
+          border-radius: 9px; padding: 0.65rem 1rem; outline: none;
+          cursor: pointer; transition: border-color 0.2s;
+        }
+        .filter-select:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+        .filter-select option { background: var(--bg); color: var(--ink); }
         .count-tag { font-family: var(--fb); font-size: 0.75rem; color: var(--muted); }
 
         /* ── TABLE ── */
-        .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .table-wrap { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .table-head {
           display: grid; grid-template-columns: 1fr 100px 120px 100px 80px;
           padding: 0.7rem 1.5rem; background: var(--bg2); border-bottom: 1px solid var(--border);
@@ -293,7 +364,7 @@ export default function LogsPage() {
         .tr {
           display: grid; grid-template-columns: 1fr 100px 120px 100px 80px;
           padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
-          align-items: center; transition: background 0.15s;
+          align-items: center; background: var(--card-bg); transition: background 0.15s;
           animation: rowIn 0.35s ease both;
         }
         .tr:last-child { border-bottom: none; }
@@ -381,10 +452,15 @@ export default function LogsPage() {
             <nav className="nav">
                 <Link href="/" className="nav-logo">
                     <div className="nav-logo-sq">F</div>
-                    Fintrack
+                    PocketPilot
                 </Link>
                 <div className="nav-right">
+                    <button className="btn-theme" onClick={toggleTheme}>
+                        {theme === "light" ? "🌙" : "☀️"}
+                    </button>
                     <Link href="/investments" className="nav-link">Investments</Link>
+                    <Link href="/goals" className="nav-link">Goals</Link>
+                    <Link href="/salary" className="nav-link">Smart Investment</Link>
                     <Link href="/dashboard" className="nav-link">Dashboard</Link>
                     <Link href="/dashboard" className="nav-cta">← Back</Link>
                 </div>
@@ -514,7 +590,29 @@ export default function LogsPage() {
                         <input className="search-inp" placeholder="Search title or category…"
                             value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
-                    <span className="count-tag">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
+                    <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
+                        <option value="all">Type: All</option>
+                        <option value="expense">One-time Expenses</option>
+                        <option value="subscription">Subscriptions</option>
+                        <option value="sip">SIPs</option>
+                        <option value="emi">EMIs/Loans</option>
+                        <option value="insurance">Insurance</option>
+                    </select>
+                    <select className="filter-select" value={amountFilter} onChange={e => setAmountFilter(e.target.value)}>
+                        <option value="all">Amount: All</option>
+                        <option value="under500">Under ₹500</option>
+                        <option value="above500">Above ₹500</option>
+                        <option value="above1000">Above ₹1000</option>
+                        <option value="above5000">Above ₹5000</option>
+                    </select>
+                    <select className="filter-select" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+                        <option value="all">Date: All Time</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                    </select>
+                    <span className="count-tag" style={{ marginLeft: "auto" }}>{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
                 </div>
 
                 {/* Table */}
@@ -583,6 +681,6 @@ export default function LogsPage() {
                     {toast.type === "success" ? "✓" : "✕"} {toast.msg}
                 </div>
             )}
-        </>
+        </div>
     );
 }

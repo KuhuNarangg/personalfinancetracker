@@ -592,7 +592,7 @@ export default function Home() {
       <nav>
         <a href="/" className="logo">
           <div className="logo-sq">F</div>
-          Fintrack
+          PocketPilot
         </a>
         <div className="nav-mid">
           <a href="#features" className="nav-pill">Features</a>
@@ -626,7 +626,7 @@ export default function Home() {
 
           <div className="hero-foot">
             <p className="hero-desc">
-              Most people waste hundreds every year on subscriptions they forgot about. Fintrack shows you everything in one ruthlessly clear dashboard.
+              Most people waste hundreds every year on subscriptions they forgot about. PocketPilot shows you everything in one ruthlessly clear dashboard.
             </p>
             <div className="hero-actions">
               <Link href="/signup" className="btn-primary">
@@ -749,7 +749,7 @@ export default function Home() {
             EVERY<br />TOOL<br /><span className="out">YOU NEED.</span>
           </h2>
           <p className="feat-body">
-            From spotting forgotten Netflix charges to understanding your full monthly cost — Fintrack gives you clarity, not noise.
+            From spotting forgotten Netflix charges to understanding your full monthly cost — PocketPilot gives you clarity, not noise.
           </p>
         </div>
         <div className="feat-list">
@@ -796,8 +796,8 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer>
-        <a href="/" className="foot-logo">Fintrack</a>
-        <span className="foot-copy">© 2025 Fintrack. All rights reserved.</span>
+        <a href="/" className="foot-logo">PocketPilot</a>
+        <span className="foot-copy">© 2025 PocketPilot. All rights reserved.</span>
         <div className="foot-links">
           <Link href="/login" className="foot-link">Login</Link>
           <Link href="/signup" className="foot-link">Sign up</Link>

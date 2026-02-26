@@ -4,36 +4,36 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-    const handleLogin = async () => {
-        setIsLoading(true);
-        try {
-            const res = await fetch("http://127.0.0.1:8000/api/login/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem("username", username);
-                router.push("/dashboard");
-            } else {
-                alert(data.message || data.error);
-            }
-        } catch (err) {
-            alert("An unexpected error occurred.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("username", username);
+        router.push("/dashboard");
+      } else {
+        alert(data.message || data.error);
+      }
+    } catch (err) {
+      alert("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <>
-            <style>{`
+  return (
+    <>
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -224,72 +224,72 @@ export default function Login() {
         }
       `}</style>
 
-            <div className="page">
-                <div className="left-panel">
-                    <div className="left-glow" />
-                    <Link href="/" className="left-logo">
-                        <div className="left-logo-sq">F</div>
-                        Fintrack
-                    </Link>
-                    <div className="left-mid">
-                        <div className="left-big">
-                            <span>TRACK</span><br />
-                            <span className="out">EVERY</span><br />
-                            <span className="r">RUPEE.</span>
-                        </div>
-                        <p className="left-sub">
-                            Sign in to your dashboard and see exactly where your money goes every single month.
-                        </p>
-                    </div>
-                    <span className="left-footer">© 2025 Fintrack</span>
-                </div>
-
-                <div className="right-panel">
-                    <Link href="/" className="btn-back">← Home</Link>
-                    <div className="form-wrap">
-                        <div className="form-eyebrow">
-                            <span className="form-eyebrow-line" />
-                            Welcome back
-                        </div>
-                        <h1 className="form-title">Sign in</h1>
-                        <p className="form-sub">Enter your credentials to access your dashboard.</p>
-
-                        <div className="field">
-                            <label className="field-label">Username</label>
-                            <input
-                                className="field-input"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="field">
-                            <label className="field-label">Password</label>
-                            <input
-                                type="password"
-                                className="field-input"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                            />
-                        </div>
-
-                        <button
-                            className="btn-submit"
-                            onClick={handleLogin}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? "Authenticating..." : "Sign In →"}
-                        </button>
-
-                        <p className="form-footer">
-                            Don't have an account? <Link href="/signup">Create one free</Link>
-                        </p>
-                    </div>
-                </div>
+      <div className="page">
+        <div className="left-panel">
+          <div className="left-glow" />
+          <Link href="/" className="left-logo">
+            <div className="left-logo-sq">F</div>
+            PocketPilot
+          </Link>
+          <div className="left-mid">
+            <div className="left-big">
+              <span>TRACK</span><br />
+              <span className="out">EVERY</span><br />
+              <span className="r">RUPEE.</span>
             </div>
-        </>
-    );
+            <p className="left-sub">
+              Sign in to your dashboard and see exactly where your money goes every single month.
+            </p>
+          </div>
+          <span className="left-footer">© 2025 PocketPilot</span>
+        </div>
+
+        <div className="right-panel">
+          <Link href="/" className="btn-back">← Home</Link>
+          <div className="form-wrap">
+            <div className="form-eyebrow">
+              <span className="form-eyebrow-line" />
+              Welcome back
+            </div>
+            <h1 className="form-title">Sign in</h1>
+            <p className="form-sub">Enter your credentials to access your dashboard.</p>
+
+            <div className="field">
+              <label className="field-label">Username</label>
+              <input
+                className="field-input"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+
+            <div className="field">
+              <label className="field-label">Password</label>
+              <input
+                type="password"
+                className="field-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />
+            </div>
+
+            <button
+              className="btn-submit"
+              onClick={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? "Authenticating..." : "Sign In →"}
+            </button>
+
+            <p className="form-footer">
+              Don't have an account? <Link href="/signup">Create one free</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

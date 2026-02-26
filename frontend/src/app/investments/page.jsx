@@ -26,7 +26,21 @@ export default function InvestmentsPage() {
     const [editingId, setEditingId] = useState(null);
     const [toast, setToast] = useState(null);
     const [requesting, setRequesting] = useState(false);
+    const [theme, setTheme] = useState("light");
     const router = useRouter();
+
+    useEffect(() => {
+        const t = localStorage.getItem("theme") || "light";
+        setTheme(t);
+        document.documentElement.classList.toggle("dark", t === "dark");
+    }, []);
+
+    const toggleTheme = () => {
+        const n = theme === "light" ? "dark" : "light";
+        setTheme(n);
+        localStorage.setItem("theme", n);
+        document.documentElement.classList.toggle("dark", n === "dark");
+    };
 
     useEffect(() => {
         const u = localStorage.getItem("username");
@@ -134,22 +148,32 @@ export default function InvestmentsPage() {
     const info = typeInfo(tab);
 
     return (
-        <>
+        <div className={theme}>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
           --bg: #f5f2ed; --bg2: #edeae3; --bg3: #e6e1d8;
+          --card-bg: #fff;
           --ink: #1a1714; --red: #d94f3d; --red2: #e8604e;
           --red-glow: rgba(217,79,61,0.22); --red-soft: rgba(217,79,61,0.08);
           --muted: #7a7368; --border: rgba(26,23,20,0.09);
-          --fh: 'Unbounded', sans-serif; --fb: 'Outfit', sans-serif;
+          --fh: 'Plus Jakarta Sans', sans-serif; --fb: 'Outfit', sans-serif;
+        }
+        .dark {
+          --bg: #0d0d0d; --bg2: #1a1a1a; --bg3: #242424;
+          --card-bg: #181818;
+          --ink: #f0ede8; --muted: #9e9690;
+          --red: #e05a48; --red2: #f07060;
+          --red-glow: rgba(224,90,72,.25); --red-soft: rgba(224,90,72,.1);
+          --border: rgba(255,255,255,0.07);
+          --nav-bg: rgba(13,13,13,0.96);
         }
         html { scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--ink); font-family: var(--fb); -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--ink); font-family: var(--fb); -webkit-font-smoothing: antialiased; transition: background .3s, color .3s; }
 
         /* NAV */
-        .nav { position: sticky; top: 0; z-index: 100; background: rgba(245,242,237,0.93); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; animation: fadeDown 0.5s ease both; }
+        .nav { position: sticky; top: 0; z-index: 100; background: var(--nav-bg, rgba(245,242,237,0.93)); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; animation: fadeDown 0.5s ease both; transition: background 0.3s, border-color 0.3s; }
         .nav-logo { font-family: var(--fh); font-size: 0.7rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .nav-logo-sq { width: 26px; height: 26px; border-radius: 6px; background: var(--red); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; color: #fff; box-shadow: 0 3px 12px var(--red-glow); }
         .nav-right { display: flex; align-items: center; gap: 1rem; }
@@ -171,22 +195,22 @@ export default function InvestmentsPage() {
 
         /* STAT CHIPS */
         .chips { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .chip { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1.25rem; min-width: 150px; animation: riseCard 0.5s ease both; }
+        .chip { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1.25rem; min-width: 150px; animation: riseCard 0.5s ease both; }
         .chip-lbl { font-family: var(--fb); font-size: 0.6rem; font-weight: 500; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 0.3rem; }
         .chip-val { font-family: var(--fh); font-size: 1.3rem; font-weight: 900; letter-spacing: -1px; line-height: 1; }
-        .chip.dark { background: #111108; border-color: transparent; }
-        .chip.dark .chip-lbl { color: rgba(255,255,255,0.25); }
-        .chip.dark .chip-val { color: #f0eee9; }
+        .chip.dark { background: var(--bg2); border-color: transparent; }
+        .chip.dark .chip-lbl { color: var(--muted); }
+        .chip.dark .chip-val { color: var(--ink); }
 
         /* TYPE TABS */
         .type-tabs { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .type-tab { display: flex; align-items: center; gap: 0.6rem; font-family: var(--fb); font-size: 0.82rem; font-weight: 400; color: var(--muted); background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 1.2rem; cursor: pointer; transition: all 0.22s; }
-        .type-tab:hover { border-color: rgba(26,23,20,0.2); color: var(--ink); }
+        .type-tab { display: flex; align-items: center; gap: 0.6rem; font-family: var(--fb); font-size: 0.82rem; font-weight: 400; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 1.2rem; cursor: pointer; transition: all 0.22s; }
+        .type-tab:hover { border-color: rgba(255,255,255,0.2) }
         .type-tab.active { font-weight: 600; color: var(--ink); border-color: transparent; box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
         .type-icon { font-size: 1rem; }
 
         /* FORM */
-        .fc { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 2rem; box-shadow: 0 4px 24px rgba(26,23,20,0.04); animation: riseCard 0.5s 0.1s ease both; }
+        .fc { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.04); animation: riseCard 0.5s 0.1s ease both; }
         .fc-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
         .fc-title { font-family: var(--fh); font-size: 0.72rem; font-weight: 700; color: var(--ink); }
         .fc-badge { font-family: var(--fb); font-size: 0.62rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 0.22rem 0.65rem; border-radius: 100px; }
@@ -195,17 +219,17 @@ export default function InvestmentsPage() {
         .fr { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem; }
         .fr2 { display: grid; grid-template-columns: 2fr auto; gap: 0.85rem; }
         .f-lbl { font-family: var(--fb); font-size: 0.62rem; font-weight: 500; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 0.4rem; }
-        .f-inp { width: 100%; font-family: var(--fb); font-size: 0.88rem; color: var(--ink); background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 0.72rem 0.9rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        .f-inp::placeholder { color: rgba(26,23,20,0.22); }
-        .f-inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); background: #fff; }
+        .f-inp { width: 100%; font-family: var(--fb); font-size: 0.88rem; color: var(--ink); background: var(--bg2); border: 1px solid var(--border); border-radius: 9px; padding: 0.72rem 0.9rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .f-inp::placeholder { color: var(--muted); opacity: 0.6; }
+        .f-inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
         .save-btn { font-family: var(--fh); font-size: 0.58rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; background: var(--red); border: none; cursor: pointer; padding: 0.72rem 1.5rem; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 3px 14px var(--red-glow); align-self: flex-end; height: fit-content; }
         .save-btn:hover { background: var(--red2); transform: translateY(-1px); }
 
         /* CARDS GRID */
         .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .inv-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 1.4rem; position: relative; overflow: hidden; transition: transform 0.22s, box-shadow 0.22s; animation: riseCard 0.5s ease both; }
+        .inv-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.4rem; position: relative; overflow: hidden; transition: transform 0.22s, box-shadow 0.22s; animation: riseCard 0.5s ease both; }
         .inv-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 3px 3px 0 0; }
-        .inv-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(26,23,20,0.08); }
+        .inv-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
         .inv-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.85rem; }
         .inv-type-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
         .inv-actions { display: flex; gap: 0.35rem; }
@@ -219,7 +243,7 @@ export default function InvestmentsPage() {
         .inv-date { font-family: var(--fb); font-size: 0.72rem; color: var(--muted); }
 
         /* EMPTY */
-        .empty { text-align: center; padding: 4rem 2rem; background: #fff; border: 1px solid var(--border); border-radius: 16px; }
+        .empty { text-align: center; padding: 4rem 2rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; }
         .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; animation: bounce 2s ease-in-out infinite; }
         .empty-t { font-family: var(--fh); font-size: 0.85rem; font-weight: 700; color: var(--ink); letter-spacing: -0.5px; margin-bottom: 0.35rem; }
         .empty-s { font-family: var(--fb); font-size: 0.8rem; color: var(--muted); font-weight: 300; }
@@ -252,13 +276,18 @@ export default function InvestmentsPage() {
             <nav className="nav">
                 <Link href="/" className="nav-logo">
                     <div className="nav-logo-sq">F</div>
-                    Fintrack
+                    PocketPilot
                 </Link>
                 <div className="nav-right">
-                    <button className="nav-cta" onClick={handleRequestStatement} disabled={requesting} style={{ background: "var(--ink)", color: "white" }}>
+                    <button className="btn-theme" onClick={toggleTheme}>
+                        {theme === "light" ? "🌙" : "☀️"}
+                    </button>
+                    <button className="nav-cta" onClick={handleRequestStatement} disabled={requesting} style={{ background: "var(--ink)", color: "var(--bg)" }}>
                         {requesting ? "Sending..." : "📄 Statement"}
                     </button>
                     <Link href="/logs" className="nav-link">Logs</Link>
+                    <Link href="/goals" className="nav-link">Goals</Link>
+                    <Link href="/salary" className="nav-link">Smart Investment</Link>
                     <Link href="/dashboard" className="nav-link">Dashboard</Link>
                     <Link href="/dashboard" className="nav-cta">← Back</Link>
                 </div>
@@ -428,6 +457,6 @@ export default function InvestmentsPage() {
                     {toast.type === "success" ? "✓" : "✕"} {toast.msg}
                 </div>
             )}
-        </>
+        </div>
     );
 }

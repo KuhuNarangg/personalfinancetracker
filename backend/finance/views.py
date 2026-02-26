@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
-from .models import Expense
+from .models import Expense, Goal
 from datetime import datetime
 import json
 from django.core.mail import send_mail
@@ -357,3 +357,164 @@ def request_statement(request):
             print("Failed to send statement:", e)
             return JsonResponse({"error": "Failed to send email"}, status=500)
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+# ──────────────────────────────────────────────────────────
+# GOALS API
+# ──────────────────────────────────────────────────────────
+
+@csrf_exempt
+def list_goals(request):
+    """GET /api/goals/?username=xxx"""
+    if request.method != 'GET':
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    username = request.GET.get('username')
+    try:
+        user = User.objects.get(username=username)
+        goals = Goal.objects.filter(user=user, is_active=True).order_by('-created_at')
+        return JsonResponse({"goals": [
+            {
+                "id": g.id,
+                "title": g.title,
+                "target_amount": g.target_amount,
+                "monthly_salary": g.monthly_salary,
+                "months_target": g.months_target,
+                "monthly_saving": g.monthly_saving,
+                "months_done": g.months_done,
+                "amount_saved": g.amount_saved,
+                "created_at": g.created_at.isoformat(),
+                "monthly_data": g.monthly_data,
+            } for g in goals
+        ]})
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+
+@csrf_exempt
+def add_goal(request):
+    """POST /api/goals/add/"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        title = data.get('title', '').strip()
+        target_amount = float(data.get('target_amount', 0))
+        monthly_salary = float(data.get('monthly_salary', 0))
+        months_target = int(data.get('months_target', 1))
+
+        if not title or target_amount <= 0 or months_target <= 0:
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
+        user = User.objects.get(username=username)
+        monthly_saving = round(target_amount / months_target, 2)
+
+        # Build the monthly_data list
+        monthly_data = [
+            {"month": i + 1, "status": "pending", "planned": monthly_saving, "actual": None}
+            for i in range(months_target)
+        ]
+
+        goal = Goal.objects.create(
+            user=user,
+            title=title,
+            target_amount=target_amount,
+            monthly_salary=monthly_salary,
+            months_target=months_target,
+            monthly_saving=monthly_saving,
+            monthly_data=monthly_data,
+        )
+        return JsonResponse({"message": "Goal created", "id": goal.id})
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def delete_goal(request):
+    """POST /api/goals/delete/"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    try:
+        data = json.loads(request.body)
+        goal = Goal.objects.get(id=data.get('goal_id'))
+        goal.is_active = False
+        goal.save()
+        return JsonResponse({"message": "Goal deleted"})
+    except Goal.DoesNotExist:
+        return JsonResponse({"error": "Goal not found"}, status=404)
+
+
+@csrf_exempt
+def update_goal_month(request):
+    """
+    POST /api/goals/update-month/
+    Payload:
+      { goal_id, month_index (0-based), action: 'paid'|'missed', actual_saved (optional, for missed) }
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    try:
+        data = json.loads(request.body)
+        goal = Goal.objects.get(id=data.get('goal_id'))
+        month_idx = int(data.get('month_index'))
+        action = data.get('action')  # 'paid' or 'missed'
+        actual_saved = data.get('actual_saved')  # float or None
+
+        md = goal.monthly_data
+        if month_idx < 0 or month_idx >= len(md):
+            return JsonResponse({"error": "Invalid month index"}, status=400)
+
+        entry = md[month_idx]
+        planned = entry['planned']
+
+        if action == 'paid':
+            entry['status'] = 'paid'
+            entry['actual'] = planned
+            goal.amount_saved += planned
+            goal.months_done += 1
+
+        elif action == 'missed':
+            saved = float(actual_saved) if actual_saved is not None else 0.0
+            entry['status'] = 'missed'
+            entry['actual'] = saved
+            goal.amount_saved += saved
+            goal.months_done += 1
+
+            # Redistribute remaining amount across pending months
+            remaining_needed = goal.target_amount - goal.amount_saved
+            pending = [i for i, m in enumerate(md) if m['status'] == 'pending']
+
+            if remaining_needed > 0 and len(pending) > 0:
+                new_monthly = round(remaining_needed / len(pending), 2)
+                for i in pending:
+                    md[i]['planned'] = new_monthly
+                goal.monthly_saving = new_monthly
+            elif remaining_needed <= 0:
+                # Goal already met
+                for i in pending:
+                    md[i]['planned'] = 0
+                    md[i]['status'] = 'paid'
+                    md[i]['actual'] = 0
+
+        goal.monthly_data = md
+
+        # Check if goal is fully complete
+        all_done = all(m['status'] in ('paid', 'missed') for m in md)
+        if all_done:
+            goal.is_active = False
+
+        goal.save()
+        return JsonResponse({
+            "message": "Updated",
+            "monthly_data": goal.monthly_data,
+            "amount_saved": goal.amount_saved,
+            "months_done": goal.months_done,
+            "monthly_saving": goal.monthly_saving,
+            "is_active": goal.is_active,
+        })
+    except Goal.DoesNotExist:
+        return JsonResponse({"error": "Goal not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
