@@ -9,16 +9,11 @@ from django.db.models import F, Q
 logger = logging.getLogger(__name__)
 
 def send_subscription_reminders():
-    """
-    Job to send subscription reminders.
-    Finds all active subscriptions mapped to today's day of the month.
-    """
+    
     today = timezone.localdate()
     current_day = today.day
 
-    # Find subscriptions that are active, are of type subscription, sip, emi, insurance or is_subscription=True
-    # and whose billing_day is today.
-    # Exclude those where subscription_months is not null and months_paid >= subscription_months
+    
     subscriptions = Expense.objects.filter(
         (Q(is_subscription=True) | Q(expense_type__in=['subscription', 'sip', 'emi', 'insurance'])),
         is_active=True,
@@ -33,7 +28,6 @@ def send_subscription_reminders():
 
     emails_to_send = []
     
-    # We can group by user or just send individually. Let's send individually for simplicity.
     for sub in subscriptions:
         user = sub.user
         if not user.email:
@@ -61,10 +55,9 @@ def send_subscription_reminders():
                 [user.email],
                 fail_silently=False,
             )
-            # Increment months_paid after successful email
             sub.months_paid += 1
             if sub.subscription_months and sub.months_paid >= sub.subscription_months:
-                sub.is_active = False # Deactivate if completed
+                sub.is_active = False
             sub.save()
             logger.info(f"Successfully sent reminder for {sub.title} to {user.email}")
         except Exception as e:

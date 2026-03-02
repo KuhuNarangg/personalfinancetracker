@@ -31,11 +31,7 @@ class Expense(models.Model):
 
 
 class Goal(models.Model):
-    """
-    A saving goal (e.g. 'Buy a Car').
-    monthly_data is a list of dicts:
-      [{month: 1, status: 'pending'|'paid'|'missed', planned: float, actual: float|null}, ...]
-    """
+
     user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goals')
     title          = models.CharField(max_length=255)
     target_amount  = models.FloatField(help_text="Total amount to save")
