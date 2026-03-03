@@ -38,8 +38,11 @@ def signup_api(request):
             return JsonResponse({
                 "message": "User created successfully"
             })
-        except Exception:
-            return JsonResponse({"error": "User already exists"}, status=400)
+        except Exception as e:
+            print("Signup Error:", str(e))
+            if "already exists" in str(e) or "Unique constraint" in str(e):
+                 return JsonResponse({"error": "User already exists"}, status=400)
+            return JsonResponse({"error": f"Internal Server Error: {str(e)}"}, status=500)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 @csrf_exempt
