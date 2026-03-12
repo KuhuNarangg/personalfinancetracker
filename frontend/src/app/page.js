@@ -28,7 +28,7 @@ const SUBS = [
 ];
 const TOTAL = SUBS.reduce((a, b) => a + b.price, 0);
 
-const TICKER = ["Track Subscriptions", "Kill Forgotten Charges", "Visualize Spending", "Know Your Burn Rate", "Set Savings Goals", "Get Renewal Alerts", "Stop Wasting Money", "Financial Clarity", "Save More", "Optimize Budget", "Reduce Costs", "Track Expenses", "Grow Wealth", "Financial Freedom", "Market Insights", "Retirement Planning", "Debt Free Journey", "Take Control", "Smart Savings", "Wealth Management"];
+const TICKER = ["Track Subscriptions", "Kill Forgotten Charges", "Visualize Spending", "Know Your Burn Rate", "Set Savings Goals", "Get Renewal Alerts", "Stop Wasting Money", "Financial Clarity", "Save More", "Optimize Budget", "Reduce Costs", "Track Expenses", "Grow Wealth", "Financial Freedom", "Market Insights", "Retirement Planning", "Debt Free Journey", "Take Control", "Smart Savings", "Wealth Management", "Expense Control"];
 
 export default function Home() {
   const [statsOn, setStatsOn] = useState(false);
