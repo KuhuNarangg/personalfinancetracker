@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.urls import path
 from finance import views
 
+from django.http import JsonResponse
+
 urlpatterns = [
+    path('', lambda r: JsonResponse({"status": "ok"})),
     path('admin/', admin.site.urls),
     path('api/signup/', views.signup_api),
     path('api/login/', views.login_api),
