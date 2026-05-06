@@ -18,27 +18,17 @@ def signup_api(request):
         password = data.get('password')
         email = data.get('email')
 
+        print(f"DEBUG: Signup request for {username}")
         try:
-            user = User.objects.create_user(username=username, email=email, password=password)
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"error": "User already exists"}, status=400)
             
-            # Email sending is disabled temporarily to prevent timeouts on Render
-            # if email:
-            #     try:
-            #         send_mail(...)
-            #     except:
-            #         pass
-                    
+            User.objects.create_user(username=username, email=email, password=password)
+            print(f"DEBUG: User {username} created.")
             return JsonResponse({"message": "User created successfully"})
-            
         except Exception as e:
-            import traceback
-            error_trace = traceback.format_exc()
-            print("Signup Exception:\n", error_trace)
-            return JsonResponse({
-                "error": "Internal Server Error",
-                "details": str(e),
-                "traceback": error_trace if settings.DEBUG else None
-            }, status=500)
+            print(f"DEBUG: Signup error: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 @csrf_exempt
