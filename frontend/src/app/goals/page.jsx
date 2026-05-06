@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const API = "http://localhost:8000";
+import { API_URL } from "@/config";
 
 export default function GoalsPage() {
     const [username, setUsername] = useState("");
@@ -46,7 +45,7 @@ export default function GoalsPage() {
     const fetchGoals = async () => {
         setLoading(true);
         try {
-            const r = await fetch(`${API}/api/goals/?username=${username}`);
+            const r = await fetch(`${API_URL}/api/goals/?username=${username}`);
             const d = await r.json();
             setGoals(d.goals || []);
         } catch (e) { console.error(e); }
@@ -57,7 +56,7 @@ export default function GoalsPage() {
         const { title, target_amount, monthly_salary, months_target } = form;
         if (!title || !target_amount || !months_target) return alert("Please fill all required fields");
         try {
-            const r = await fetch(`${API}/api/goals/add/`, {
+            const r = await fetch(`${API_URL}/api/goals/add/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -77,7 +76,7 @@ export default function GoalsPage() {
 
     const deleteGoal = async (id) => {
         if (!confirm("Delete this goal? This cannot be undone.")) return;
-        await fetch(`${API}/api/goals/delete/`, {
+        await fetch(`${API_URL}/api/goals/delete/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ goal_id: id }),
@@ -98,7 +97,7 @@ export default function GoalsPage() {
         if (actualSaved !== null) body.actual_saved = actualSaved;
 
         try {
-            const r = await fetch(`${API}/api/goals/update-month/`, {
+            const r = await fetch(`${API_URL}/api/goals/update-month/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
