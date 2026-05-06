@@ -14,7 +14,7 @@ class Expense(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
     category = models.CharField(max_length=100, blank=True)
     date = models.DateTimeField(default=timezone.now)
     is_subscription = models.BooleanField(default=False)
@@ -30,17 +30,24 @@ class Expense(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'date']),
+            models.Index(fields=['user', 'billing_day', 'is_active']),
+            models.Index(fields=['expense_type']),
+        ]
+
 
 class Goal(models.Model):
 
     user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goals')
     title          = models.CharField(max_length=255)
-    target_amount  = models.FloatField(help_text="Total amount to save")
-    monthly_salary = models.FloatField(help_text="User in-hand monthly salary")
+    target_amount  = models.DecimalField(max_digits=12, decimal_places=2, help_text="Total amount to save")
+    monthly_salary = models.DecimalField(max_digits=12, decimal_places=2, help_text="User in-hand monthly salary")
     months_target  = models.IntegerField(help_text="Total months planned")
-    monthly_saving = models.FloatField(help_text="Planned saving per month (target / months)")
+    monthly_saving = models.DecimalField(max_digits=12, decimal_places=2, help_text="Planned saving per month (target / months)")
     months_done    = models.IntegerField(default=0)
-    amount_saved   = models.FloatField(default=0.0)
+    amount_saved   = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     is_active      = models.BooleanField(default=True)
     created_at     = models.DateTimeField(auto_now_add=True)
     monthly_data   = models.JSONField(default=list)

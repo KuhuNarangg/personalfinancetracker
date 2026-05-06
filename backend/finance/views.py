@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from .models import Expense, Goal
 from datetime import datetime
 import json
+from decimal import Decimal
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -402,19 +403,19 @@ def add_goal(request):
         data = json.loads(request.body)
         username = data.get('username')
         title = data.get('title', '').strip()
-        target_amount = float(data.get('target_amount', 0))
-        monthly_salary = float(data.get('monthly_salary', 0))
+        target_amount = Decimal(str(data.get('target_amount', 0)))
+        monthly_salary = Decimal(str(data.get('monthly_salary', 0)))
         months_target = int(data.get('months_target', 1))
 
         if not title or target_amount <= 0 or months_target <= 0:
             return JsonResponse({"error": "Invalid data"}, status=400)
 
         user = User.objects.get(username=username)
-        monthly_saving = round(target_amount / months_target, 2)
+        monthly_saving = round(target_amount / Decimal(str(months_target)), 2)
 
         # Build the monthly_data list
         monthly_data = [
-            {"month": i + 1, "status": "pending", "planned": monthly_saving, "actual": None}
+            {"month": i + 1, "status": "pending", "planned": float(monthly_saving), "actual": None}
             for i in range(months_target)
         ]
 
@@ -479,9 +480,9 @@ def update_goal_month(request):
             goal.months_done += 1
 
         elif action == 'missed':
-            saved = float(actual_saved) if actual_saved is not None else 0.0
+            saved = Decimal(str(actual_saved)) if actual_saved is not None else Decimal('0.0')
             entry['status'] = 'missed'
-            entry['actual'] = saved
+            entry['actual'] = float(saved)
             goal.amount_saved += saved
             goal.months_done += 1
 
@@ -490,9 +491,9 @@ def update_goal_month(request):
             pending = [i for i, m in enumerate(md) if m['status'] == 'pending']
 
             if remaining_needed > 0 and len(pending) > 0:
-                new_monthly = round(remaining_needed / len(pending), 2)
+                new_monthly = round(remaining_needed / Decimal(str(len(pending))), 2)
                 for i in pending:
-                    md[i]['planned'] = new_monthly
+                    md[i]['planned'] = float(new_monthly)
                 goal.monthly_saving = new_monthly
             elif remaining_needed <= 0:
                 # Goal already met

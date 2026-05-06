@@ -15,8 +15,3 @@ class FinanceConfig(AppConfig):
             if connection.vendor == 'postgresql':
                 with connection.cursor() as cursor:
                     cursor.execute('SET search_path TO financetracker, public')
-
-        import os
-        if os.environ.get('RUN_MAIN') == 'true':
-            from finance import updater
-            updater.start()
