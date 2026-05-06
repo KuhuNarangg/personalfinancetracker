@@ -21,20 +21,12 @@ def signup_api(request):
         try:
             user = User.objects.create_user(username=username, email=email, password=password)
             
-            # Send welcome email
-            if email:
-                subject = "Welcome to Finance Tracker!"
-                message = f"Hi {username},\n\nWelcome to Finance Tracker! Your account has been created successfully.\n\nThank you!"
-                try:
-                    send_mail(
-                        subject,
-                        message,
-                        settings.EMAIL_HOST_USER,
-                        [email],
-                        fail_silently=True,
-                    )
-                except Exception as e:
-                    print("Could not send welcome email:", e)
+            # Email sending is disabled temporarily to prevent timeouts on Render
+            # if email:
+            #     try:
+            #         send_mail(...)
+            #     except:
+            #         pass
                     
             return JsonResponse({"message": "User created successfully"})
             
