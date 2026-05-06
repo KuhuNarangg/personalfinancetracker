@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { API_URL } from "@/config";
 
 const TYPE_COLORS = {
     expense: "#d94f3d",
@@ -60,7 +61,7 @@ export default function LogsPage() {
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const r = await fetch("http://127.0.0.1:8000/api/get-expenses/", {
+            const r = await fetch(`${API_URL}/api/get-expenses/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username }),
@@ -81,7 +82,7 @@ export default function LogsPage() {
             : form.billing_period;
         const body = { ...form, username, id: editingId, expense_type: form.type, billing_period: resolvedPeriod };
         try {
-            await fetch(`http://127.0.0.1:8000/api/${endpoint}/`, {
+            await fetch(`${API_URL}/api/${endpoint}/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
@@ -96,7 +97,7 @@ export default function LogsPage() {
     const handleDelete = async (id) => {
         if (!confirm("Delete this entry?")) return;
         try {
-            await fetch("http://127.0.0.1:8000/api/delete-expense/", {
+            await fetch(`${API_URL}/api/delete-expense/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, id }),
@@ -109,7 +110,7 @@ export default function LogsPage() {
     const handleStop = async (id) => {
         if (!confirm("Stop this subscription? It will show as stopped but remain in your logs.")) return;
         try {
-            await fetch("http://127.0.0.1:8000/api/stop-subscription/", {
+            await fetch(`${API_URL}/api/stop-subscription/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, id }),

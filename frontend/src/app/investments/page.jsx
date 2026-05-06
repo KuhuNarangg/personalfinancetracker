@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { API_URL } from "@/config";
 
 const INV_TYPES = [
     { value: "sip", label: "SIP Investment", icon: "📈", color: "#2a9d8f", soft: "rgba(42,157,143,0.1)" },
@@ -58,7 +59,7 @@ export default function InvestmentsPage() {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const r = await fetch("http://127.0.0.1:8000/api/get-expenses/", {
+            const r = await fetch(`${API_URL}/api/get-expenses/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username }),
@@ -74,7 +75,7 @@ export default function InvestmentsPage() {
         if (!username) return;
         setRequesting(true);
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/request-statement/", {
+            const res = await fetch(`${API_URL}/api/request-statement/`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username })
             });
@@ -91,7 +92,7 @@ export default function InvestmentsPage() {
         const endpoint = editingId ? "edit-expense" : "add-expense";
         const body = { ...resolvedBody(form), username, id: editingId, expense_type: tab };
         try {
-            await fetch(`http://127.0.0.1:8000/api/${endpoint}/`, {
+            await fetch(`${API_URL}/api/${endpoint}/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
@@ -114,7 +115,7 @@ export default function InvestmentsPage() {
     const handleDelete = async (id) => {
         if (!confirm("Remove this entry?")) return;
         try {
-            await fetch("http://127.0.0.1:8000/api/delete-expense/", {
+            await fetch(`${API_URL}/api/delete-expense/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, id }),

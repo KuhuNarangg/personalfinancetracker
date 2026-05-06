@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/config";
 
 /* ─── Animated Counter ───────────────────────────── */
 function Counter({ value, duration = 900 }) {
@@ -128,7 +129,7 @@ export default function Dashboard() {
             ? (modalForm.custom_months ? `${modalForm.custom_months}months` : "monthly")
             : modalForm.billing_period;
         try {
-            await fetch("http://127.0.0.1:8000/api/add-expense/", {
+            await fetch(`${API_URL}/api/add-expense/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...modalForm, username, expense_type: modalForm.type, billing_period: resolvedPeriod }),
@@ -167,7 +168,7 @@ export default function Dashboard() {
     const load = async () => {
         setLoading(true);
         try {
-            const r = await fetch("http://127.0.0.1:8000/api/get-expenses/", {
+            const r = await fetch(`${API_URL}/api/get-expenses/`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username }),
             });
@@ -180,7 +181,7 @@ export default function Dashboard() {
     const handleRequestStatement = async () => {
         setRequesting(true);
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/request-statement/", {
+            const res = await fetch(`${API_URL}/api/request-statement/`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username }),
             });
