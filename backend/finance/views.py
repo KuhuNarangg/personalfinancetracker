@@ -36,14 +36,17 @@ def signup_api(request):
                 except Exception as e:
                     print("Could not send welcome email:", e)
                     
-            return JsonResponse({
-                "message": "User created successfully"
-            })
+            return JsonResponse({"message": "User created successfully"})
+            
         except Exception as e:
-            print("Signup Error:", str(e))
-            if "already exists" in str(e) or "Unique constraint" in str(e):
-                 return JsonResponse({"error": "User already exists"}, status=400)
-            return JsonResponse({"error": f"Internal Server Error: {str(e)}"}, status=500)
+            import traceback
+            error_trace = traceback.format_exc()
+            print("Signup Exception:\n", error_trace)
+            return JsonResponse({
+                "error": "Internal Server Error",
+                "details": str(e),
+                "traceback": error_trace if settings.DEBUG else None
+            }, status=500)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 @csrf_exempt
