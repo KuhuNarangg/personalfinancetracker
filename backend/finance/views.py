@@ -136,6 +136,9 @@ def add_expense(request):
                 message += "\nThank you!"
                 
                 try:
+                    import socket
+                    old_timeout = socket.getdefaulttimeout()
+                    socket.setdefaulttimeout(5)  # 5 second timeout
                     send_mail(
                         subject,
                         message,
@@ -143,12 +146,17 @@ def add_expense(request):
                         [user.email],
                         fail_silently=True,
                     )
+                    socket.setdefaulttimeout(old_timeout)
                     expense.months_paid += 1
                     if expense.subscription_months and expense.months_paid >= expense.subscription_months:
-                        expense.is_active = False # Deactivate if completed immediately (e.g., 1 month sub)
+                        expense.is_active = False
                     expense.save()
                 except Exception as e:
-                    print("Could not send initial subscription email:", e)
+                    print("Could not send initial subscription email (timeout or error):", e)
+                    try:
+                        socket.setdefaulttimeout(old_timeout)
+                    except:
+                        pass
 
         return JsonResponse({"message": "Expense added"})
 
@@ -332,19 +340,28 @@ def request_statement(request):
             message += f"Total Expenses: {total}\n\n"
             message += "Thank you for using Finance Tracker!"
             
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                [user.email],
-                fail_silently=False,
-            )
-            return JsonResponse({"message": "Statement sent to your email"})
+            try:
+                import socket
+                old_timeout = socket.getdefaulttimeout()
+                socket.setdefaulttimeout(10)  # 10 second timeout for statements
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
+                socket.setdefaulttimeout(old_timeout)
+                return JsonResponse({"message": "Statement sent to your email"})
+            except Exception as e:
+                try:
+                    socket.setdefaulttimeout(old_timeout)
+                except:
+                    pass
+                print("Failed to send statement:", e)
+                return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
-        except Exception as e:
-            print("Failed to send statement:", e)
-            return JsonResponse({"error": "Failed to send email"}, status=500)
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 

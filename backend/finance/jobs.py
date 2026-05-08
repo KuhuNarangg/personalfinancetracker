@@ -49,18 +49,26 @@ def send_subscription_reminders():
         message += "\nThank you!"
 
         try:
+            import socket
+            old_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(10)  # 10 second timeout
             send_mail(
                 subject,
                 message,
                 settings.EMAIL_HOST_USER,
                 [user.email],
-                fail_silently=False,
+                fail_silently=True,
             )
+            socket.setdefaulttimeout(old_timeout)
             sub.months_paid += 1
             if sub.subscription_months and sub.months_paid >= sub.subscription_months:
                 sub.is_active = False
             sub.save()
             logger.info(f"Successfully sent reminder for {sub.title} to {user.email}")
         except Exception as e:
+            try:
+                socket.setdefaulttimeout(old_timeout)
+            except:
+                pass
             logger.error(f"Failed to send email for {sub.title} to {user.email}: {e}")
 
